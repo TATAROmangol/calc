@@ -74,10 +74,7 @@ func (c *Calculator) parse(src string)([]float64, []byte, error){
 	return numbers, operands, nil
 }
 
-func (c *Calculator) calcQuots()(float64, error){
-	return 0, nil
-}
-
 func (c *Calculator) calc(numbers []float64, operands []byte) (float64, error){
+	
 	return 0, nil
 }
