@@ -1,16 +1,8 @@
 package main
 
-import (
-	"fmt"
+import "example.com/m/pkg/server"
 
-	"example.com/m/pkg/calc"
-) 
-
-
-
-func main(){
-	res := "2+(1))"
-	err := calc.CalcQuots(&res)
-	fmt.Println(res)
-	fmt.Println(err)
+func main() {
+    srv := server.NewServer()
+    srv.Run()
 }
