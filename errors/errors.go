@@ -3,5 +3,8 @@ package errors
 import "fmt"
 
 var(
-	ErrUnknownFormat = fmt.Errorf("Unknown format")
+	ErrUnknownFormat = fmt.Errorf("Неправильный формат")
+	ErrDivisionByZero = fmt.Errorf("Нельзя делить на 0")
+	ErrNotOpenQuot = fmt.Errorf("Нет открывающей скобки")
+	ErrNotCloseQuot = fmt.Errorf("Нет закрывающей скобки")
 )
