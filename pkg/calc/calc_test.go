@@ -2,9 +2,41 @@ package calc
 
 import (
 	"testing"
-
 	"example.com/m/errors"
 )
+
+func TestMakeOperation(t *testing.T){
+	test_cases := []struct {
+		a  float64
+		b float64
+		o byte
+		res float64
+		err error
+	}{
+		{1,2,bDiv,0.5,nil},
+		{1,0,bDiv,0,errors.ErrDivisionByZero},
+		{0,1,bDiv,0,nil},
+		{-1,-1,bDiv,1,nil},
+		{1,-1,bDiv,-1,nil},
+		{-1,1,bDiv,-1,nil},
+		{-1,-1,bMult,1,nil},
+		{1,-1,bMult,-1,nil},
+		{-1,1,bMult,-1,nil},
+		{-1,1,bPlus,0,nil},
+		{-1,-1,bPlus,-2,nil},
+		{1,1,bPlus,2,nil},
+		{-1,1,bMinus,-2,nil},
+		{-1,-1,bMinus,0,nil},
+		{1,1,bMinus,0,nil},
+	}
+
+	for i, tCase := range test_cases {
+		eRes, eErr := makeOperation(tCase.a,tCase.b,tCase.o)
+		if eErr != tCase.err || eRes != tCase.res {
+			t.Errorf("Expected for test %v res:%v and err:%v, got res:%v and err:%v",i, tCase.res, tCase.err, eRes, eErr)
+		}
+	}
+}
 
 func TestCalculation(t *testing.T) {
 	test_cases := []struct {
@@ -81,24 +113,6 @@ func equalByteSlices(a, b []byte) bool {
 	return true
 }
 
-func TestCalc(t *testing.T) {
-	test_cases := []struct {
-		inp string
-		res float64
-		err error
-	}{
-		{"2/2", 1.0, nil},
-		{"2+3*2", 8.0, nil},
-	}
-
-	for _, tCase := range test_cases {
-		eRes, eErr := Calc(tCase.inp)
-		if eErr != tCase.err || eRes != tCase.res {
-			t.Errorf("Expected res:%v and err:%v, got res:%v and err:%v", tCase.res, tCase.err, eRes, eErr)
-		}
-	}
-}
-
 func TestCalcQuots(t *testing.T) {
 	test_cases := []struct {
 		inp string
@@ -118,6 +132,38 @@ func TestCalcQuots(t *testing.T) {
 			t.Errorf("For input %v, expected err %v, got err:%v", tCase.inp, tCase.err, exErr)
 		} else if tCase.err == nil && res != tCase.res {
 			t.Errorf("For input %v, expected res: %v, got res: %v", tCase.inp, tCase.res, res)
+		}
+	}
+}
+
+func TestCalc(t *testing.T) {
+	test_cases := []struct {
+		inp string
+		res float64
+		err error
+	}{
+		{"2/", 0, errors.ErrUnknownFormat},
+		{"2*", 0, errors.ErrUnknownFormat},
+		{"2+", 0, errors.ErrUnknownFormat},
+		{"2-", 0, errors.ErrUnknownFormat},
+		{"/2", 0, errors.ErrUnknownFormat},
+		{"*2", 0, errors.ErrUnknownFormat},
+		{"+2", 0, errors.ErrUnknownFormat},
+		{"-2", 0, errors.ErrUnknownFormat},
+		{"(2+2))", 0, errors.ErrNotOpenQuot},
+		{"((2+2)", 0, errors.ErrNotCloseQuot},
+		{"1+(2/0+1)", 0, errors.ErrDivisionByZero},
+		{"2/2", 1.0, nil},
+		{"2+3*2", 8.0, nil},
+		{"2/2+2*4", 9.0, nil},
+		{"1+(1+1)*2/2", 3.0, nil},
+		{"2*((1+1)/(3-2*1))+1", 5.0, nil},
+	}
+
+	for _, tCase := range test_cases {
+		eRes, eErr := Calc(tCase.inp)
+		if eErr != tCase.err || eRes != tCase.res {
+			t.Errorf("Expected res:%v and err:%v, got res:%v and err:%v", tCase.res, tCase.err, eRes, eErr)
 		}
 	}
 }
