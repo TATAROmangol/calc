@@ -20,18 +20,22 @@ func(c *Server) Run(){
 func calcHandler(w http.ResponseWriter, r *http.Request){
 	w.Header().Set("Content-Type", "application/json")
 
-	var inp Input
+	inp := make(map[string]any)
 	if err := json.NewDecoder(r.Body).Decode(&inp); err != nil{
 		send500(w)
 		return
 	}
 
-	expression := inp.Expression
+	expression, ok := inp["expression"].(string)
+	if !ok{
+		send500(w)
+		return
+	}
 
 	res, err := calc.Calc(expression)
 	if err != nil{
 		rErr := ErrResult{err.Error()}
-		sendMessage(w, 402, rErr)
+		sendMessage(w, 422, rErr)
 		return
 	}
 
@@ -41,14 +45,20 @@ func calcHandler(w http.ResponseWriter, r *http.Request){
 
 func sendMessage(w http.ResponseWriter, status int, message any){
 	w.WriteHeader(status)
-    if encodeErr := json.NewEncoder(w).Encode(message); encodeErr != nil {
-        send500(w)
-    }
+	response, err := json.MarshalIndent(message, "", "   ")
+	if err != nil{
+		send500(w)
+		return 
+	}
+	if _, err := w.Write(response); err != nil{
+		send500(w)
+		return
+	}
 }
 
 func send500(w http.ResponseWriter){
 	w.WriteHeader(500)
-	r, _ := json.Marshal(error500)
+	r, _ := json.MarshalIndent(error500,"", "    ")
 	w.Write(r)
 }
 

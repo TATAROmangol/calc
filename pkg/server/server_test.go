@@ -52,7 +52,7 @@ func TestCalcHandlerStatus200(t *testing.T){
 	}
 }
 
-func TestCalcHandlerStatus402(t *testing.T){
+func TestCalcHandlerStatus422(t *testing.T){
 	test_cases := []struct{
 		inp Input
 		res ErrResult
@@ -81,7 +81,7 @@ func TestCalcHandlerStatus402(t *testing.T){
 		res := w.Result()
 		defer res.Body.Close()
 
-		if res.StatusCode != 402{
+		if res.StatusCode != 422{
 			t.Errorf("For input %v, wrong status code", tCase.inp)
 		}
 
@@ -97,6 +97,44 @@ func TestCalcHandlerStatus402(t *testing.T){
 
         if gotRes.Err != tCase.res.Err {
             t.Errorf("For input %v, expected result %v, got %v", tCase.inp, tCase.res.Err, gotRes.Err)
+        }
+	}
+}
+
+func TestCalcHandlerStatus500(t *testing.T){
+	test_cases := []struct{
+		inp FallInput
+		res ErrResult
+	}{
+		{FallInput{"2+2"},ErrResult{errors.ErrUnknownError.Error()}},
+		{FallInput{"2+2*2"},ErrResult{errors.ErrUnknownError.Error()}},
+	}
+	for _, tCase := range test_cases{
+		body, _ := json.Marshal(tCase.inp)
+		r := httptest.NewRequest(http.MethodPost, "/api/v1/calculate", bytes.NewBuffer(body))
+		w := httptest.NewRecorder()
+
+		calcHandler(w,r)
+
+		res := w.Result()
+		defer res.Body.Close()
+
+		if res.StatusCode != 500{
+			t.Errorf("For input %v, wrong status code", tCase.inp)
+		}
+
+		data, err := io.ReadAll(res.Body)
+		if err != nil {
+			t.Errorf("For input %v, error: %v", tCase.inp, err)
+		}
+
+		var errRes ErrResult
+        if err := json.Unmarshal(data, &errRes); err != nil {
+            t.Errorf("For input %v, error unmarshalling response: %v", tCase.inp, err)
+        }
+
+        if errRes.Err != tCase.res.Err {
+            t.Errorf("For input %v, expected result %v, got %v", tCase.inp, tCase.res.Err, errRes.Err)
         }
 	}
 }

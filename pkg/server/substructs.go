@@ -8,6 +8,10 @@ type Input struct{
 	Expression string `json:"expression"`
 }
 
+type FallInput struct{
+	P string `json:"p"`
+}
+
 type OkResult struct{
 	Result float64 `json:"result"`
 }
